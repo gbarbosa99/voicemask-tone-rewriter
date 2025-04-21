@@ -1,50 +1,73 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from transcribe import transcribe_audio
 from rewrite import rewrite_text
 import os
 from dotenv import load_dotenv
+from utils import log_interaction, convert_to_wav
+from typing import List
+import shutil
+import uuid
 
-# Load environment variables
 load_dotenv()
-print("DEBUG:", os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI()
 
-# CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace with Flutter web origin in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+ALLOWED_TONES = ["confident", "polite", "concise"]
 
 @app.post("/process/")
 async def process_audio(
     file: UploadFile = File(...),
     tone: str = Form(...)
 ):
-    temp_path = f"temp_{file.filename}"
+    if tone.lower() not in ALLOWED_TONES:
+        raise HTTPException(status_code=400, detail=f"Invalid tone: {tone}. Allowed tones: {ALLOWED_TONES}")
 
-    # Save uploaded audio file
-    with open(temp_path, "wb") as buffer:
-        buffer.write(await file.read())
+    if not file.filename.endswith((".wav", ".mp3", ".m4a")):
+        raise HTTPException(status_code=400, detail="Unsupported audio format. Use .wav, .mp3, or .m4a")
+
+    temp_id = str(uuid.uuid4())
+    input_path = f"temp_{temp_id}_{file.filename}"
+    wav_path = input_path.replace(".m4a", ".wav")
 
     try:
-        # Step 1: Transcribe audio with Whisper
-        transcript = transcribe_audio(temp_path)
+        # Save uploaded audio
+        with open(input_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
 
-        # Step 2: Rewrite using GPT
+        # Convert if necessary
+        if input_path.endswith(".m4a"):
+            convert_to_wav(input_path, wav_path)
+            os.remove(input_path)
+        else:
+            wav_path = input_path
+
+        # Transcribe
+        transcript = transcribe_audio(wav_path)
+
+        # Rewrite
         rewritten = rewrite_text(transcript, tone)
 
-        # Step 3: Return the results
+        # Log this request
+        log_interaction(tone, transcript, rewritten)
+
         return {
             "original": transcript,
-            "rewritten": rewritten
+            "rewritten": rewritten,
+            "tone": tone
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
     finally:
-        # Always delete the temp file
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if os.path.exists(wav_path):
+            os.remove(wav_path)
