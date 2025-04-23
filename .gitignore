@@ -1,3 +1,18 @@
-backend/venv
+# Flutter build files
+frontend/build/
+frontend/.dart_tool/
+frontend/.idea/
+frontend/.vscode/
+
+# Python
+backend/venv/
+__pycache__/
+*.py[cod]
+*.swp
+
+# Environment & logs
 backend/.env
+backend/history.jsonl
+backend/static/speech_output.mp3
+backend/venv
 backend/__pycache__
