@@ -1,68 +1,84 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from enum import Enum
 from transcribe import transcribe_audio
 from rewrite import rewrite_text
-import os
-from dotenv import load_dotenv
+from tts_speech import synthesize_speech
 from utils import log_interaction, convert_to_wav
-from typing import List
+import os
 import shutil
 import uuid
+from dotenv import load_dotenv
+from fastapi.responses import FileResponse
 
 load_dotenv()
 
 app = FastAPI()
 
+# Allow frontend access (you can restrict origins in prod)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Set to specific domain in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-ALLOWED_TONES = ["confident", "polite", "concise"]
+# Define tone options using Enum for type safety + Swagger UI dropdown support
+class ToneEnum(str, Enum):
+    confident = "confident"
+    polite = "polite"
+    concise = "concise"
+
+# Expose tone options to Flutter app
+@app.get("/tones/")
+def get_tones():
+    return [tone.value for tone in ToneEnum]
+
+@app.get("/files/{filename}")
+def get_audio_file(filename: str):
+    file_path = f"./{filename}"
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path, media_type="audio/wav")
 
 @app.post("/process/")
 async def process_audio(
     file: UploadFile = File(...),
-    tone: str = Form(...)
+    tone: ToneEnum = Form(...)
 ):
-    if tone.lower() not in ALLOWED_TONES:
-        raise HTTPException(status_code=400, detail=f"Invalid tone: {tone}. Allowed tones: {ALLOWED_TONES}")
-
-    if not file.filename.endswith((".wav", ".mp3", ".m4a")):
-        raise HTTPException(status_code=400, detail="Unsupported audio format. Use .wav, .mp3, or .m4a")
+    allowed_extensions = (".wav", ".mp3", ".m4a", ".mp4")
+    if not file.filename.lower().endswith(allowed_extensions):
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported audio format. Use .wav, .mp3, .m4a, or .mp4"
+        )
 
     temp_id = str(uuid.uuid4())
     input_path = f"temp_{temp_id}_{file.filename}"
-    wav_path = input_path.replace(".m4a", ".wav")
+    wav_path = input_path.rsplit(".", 1)[0] + ".wav"
+    output_audio_path = f"rewritten_{temp_id}.wav"
 
     try:
-        # Save uploaded audio
         with open(input_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # Convert if necessary
-        if input_path.endswith(".m4a"):
+        if not input_path.endswith(".wav"):
             convert_to_wav(input_path, wav_path)
             os.remove(input_path)
         else:
             wav_path = input_path
 
-        # Transcribe
         transcript = transcribe_audio(wav_path)
-
-        # Rewrite
-        rewritten = rewrite_text(transcript, tone)
-
-        # Log this request
-        log_interaction(tone, transcript, rewritten)
+        rewritten = rewrite_text(transcript, tone.value)
+        synthesize_speech(rewritten, output_audio_path)
+        log_interaction(tone.value, transcript, rewritten)
 
         return {
             "original": transcript,
             "rewritten": rewritten,
-            "tone": tone
+            "tone": tone.value,
+            "audio_url": f"/files/{output_audio_path}"
         }
 
     except Exception as e:
