@@ -59,3 +59,4 @@ web/Flutter/ephemeral/
 *.tmp
 *.swp
 .DS_Store
+rewrite.txt
