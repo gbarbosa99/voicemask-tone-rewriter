@@ -3,6 +3,7 @@ frontend/build/
 frontend/.dart_tool/
 frontend/.idea/
 frontend/.vscode/
+frontend/*
 
 # Python
 backend/venv/
@@ -15,7 +16,7 @@ backend/.env
 backend/history.jsonl
 backend/static/speech_output.mp3
 backend/venv
-backend/__pycache__
+backend/__pycache__/*
 
 # Flutter/Dart/Pub related
 .dart_tool/
@@ -59,3 +60,4 @@ web/Flutter/ephemeral/
 *.tmp
 *.swp
 .DS_Store
+rewrite.txt
