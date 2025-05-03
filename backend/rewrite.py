@@ -1,25 +1,24 @@
-# backend/rewrite.py
+import openai
+import os
+from dotenv import load_dotenv
 
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-
-model_id = "sshleifer/tiny-gpt2"  # Super lightweight, loads in seconds
-
-print("Loading rewrite model...")
-
-tokenizer = AutoTokenizer.from_pretrained(model_id, use_fast=False)
-model = AutoModelForCausalLM.from_pretrained(model_id)
-
-rewrite_pipeline = pipeline(
-    "text-generation",
-    model=model,
-    tokenizer=tokenizer,
-    max_new_tokens=100,
-    do_sample=True,
-    temperature=0.7,
-)
-print("Rewrite model loaded.")
+load_dotenv()
+openai.api_key = os.getenv("openai_key")
 
 def rewrite_text(text: str, tone: str = "confident") -> str:
-    prompt = f"Rewrite the following text to sound more {tone}:\n\n{text}"
-    result = rewrite_pipeline(prompt)
-    return result[0]["generated_text"].strip()
+    prompt = (
+        f"You are a communication coach. Rewrite the following message to sound more {tone}, "
+        f"while keeping the original meaning and keeping it short and natural:\n\n{text}"
+    )
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4.1-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=200,
+        )
+        return response["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print(f"OpenAI API error: {e}")
+        return "Sorry, something went wrong with rewriting."
