@@ -10,6 +10,7 @@ import shutil
 import uuid
 from dotenv import load_dotenv
 from fastapi.responses import FileResponse
+from unidecode import unidecode
 
 load_dotenv()
 
@@ -55,15 +56,16 @@ async def process_audio(
         )
 
     temp_id = str(uuid.uuid4())
-    input_path = f"temp_{temp_id}_{file.filename}"
+    ext = os.path.splitext(file.filename)[1].lower()
+    input_path = f"temp_{temp_id}{ext}"
     wav_path = input_path.rsplit(".", 1)[0] + ".wav"
-    output_audio_path = f"rewritten_{temp_id}.wav"
+    output_audio_path = f"rewritten_{temp_id}{ext}"
 
     try:
         with open(input_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        if not input_path.endswith(".wav"):
+        if ext != ".wav":
             convert_to_wav(input_path, wav_path)
             os.remove(input_path)
         else:
@@ -87,3 +89,19 @@ async def process_audio(
     finally:
         if os.path.exists(wav_path):
             os.remove(wav_path)
+
+@app.get("/files/{filename}")
+def get_audio_file(filename: str):
+    file_path = f"./{filename}"
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    ext = filename.split(".")[-1].lower()
+    media_type = {
+        "wav": "audio/wav",
+        "mp3": "audio/mpeg",
+        "m4a": "audio/mp4",
+        "mp4": "audio/mp4"
+    }.get(ext, "application/octet-stream")
+
+    return FileResponse(file_path, media_type=media_type, filename=filename)
