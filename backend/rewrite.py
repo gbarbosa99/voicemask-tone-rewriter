@@ -12,13 +12,13 @@ def rewrite_text(text: str, tone: str = "confident") -> str:
     )
 
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=200,
         )
-        return response["choices"][0]["message"]["content"].strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
         print(f"OpenAI API error: {e}")
         return "Sorry, something went wrong with rewriting."
