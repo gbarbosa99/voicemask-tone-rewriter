@@ -1,52 +1,81 @@
 import os
 import torch
-import hashlib
+import tempfile
 
 from openvoice import se_extractor
 from openvoice.api import ToneColorConverter
 from melo.api import TTS as MeloTTS
 
 
-def synthesize_cloned_speech(ref_audio, text, output_path):
-    # === 0. Setup ===
-    ckpt_converter = 'checkpoints_v2/converter'
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+# Set device
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    os.makedirs("audio/se", exist_ok=True)
-    os.makedirs("audio/temp", exist_ok=True)
+# Resolve base directory (backend/)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    # === 1. Cache speaker embedding based on reference audio ===
-    with open(ref_audio, "rb") as f:
-        audio_hash = hashlib.sha256(f.read()).hexdigest()[:12]
-    se_path = f"audio/se/{audio_hash}.pth"
+# Absolute paths to checkpoints
+CHECKPOINTS_DIR = "/home/gbarbosa9/OpenVoice/checkpoints"
 
-    if not os.path.exists(se_path):
-        print("==> Extracting new speaker embedding")
-        tone_color_converter_tmp = ToneColorConverter(f'{ckpt_converter}/config.json', device=device)
-        tone_color_converter_tmp.load_ckpt(f'{ckpt_converter}/checkpoint.pth')
-        target_se, _ = se_extractor.get_se(ref_audio, tone_color_converter_tmp, vad=True)
-        torch.save(target_se, se_path)
+CONVERTER_DIR = os.path.join(CHECKPOINTS_DIR, "converter")
+BASE_SPEAKER_SE_DIR = os.path.join(CHECKPOINTS_DIR, "base_speakers", "ses")
+
+print("[DEBUG] Checking path:", os.path.join(CONVERTER_DIR, "config.json"))
+
+assert os.path.exists(os.path.join(CONVERTER_DIR, "config.json")), "config.json not found"
+assert os.path.exists(os.path.join(CONVERTER_DIR, "checkpoint.pth")), "checkpoint.pth not found"
+
+# Load tone color converter
+tone_color_converter = ToneColorConverter(
+    os.path.join(CONVERTER_DIR, "config.json"),
+    device=device
+)
+tone_color_converter.load_ckpt(os.path.join(CONVERTER_DIR, "checkpoint.pth"))
+
+# Optional: cache speaker embeddings
+SE_CACHE = {}
+
+def synthesize_cloned_speech(ref_audio_path, text, output_path):
+    print(f"[INFO] Synthesizing cloned speech to: {output_path}")
+    
+    # Get target speaker embedding
+    if ref_audio_path in SE_CACHE:
+        print("[INFO] Using cached speaker embedding.")
+        target_se = SE_CACHE[ref_audio_path]
     else:
-        print(f"==> Reusing cached speaker embedding: {se_path}")
+        print("[INFO] Extracting speaker embedding...")
+        target_se, _ = se_extractor.get_se(
+            ref_audio_path,
+            tone_color_converter,
+            target_dir=os.path.join(BASE_DIR, "processed"),
+            vad=True
+        )
+        SE_CACHE[ref_audio_path] = target_se
 
-    # === 2. Generate neutral base speech with MeloTTS ===
-    print("==> Generating neutral base voice")
-    tts_path = "audio/temp/neutral.wav"
-    melo = MeloTTS(language="EN", device=device)
-    speaker_ids = melo.hps.data.spk2id
-    default_speaker_id = list(speaker_ids.values())[0]
-    melo.tts_to_file(text, default_speaker_id, tts_path, speed=1.0)
+    # Use MeloTTS to create base neutral voice
+    print("[INFO] Synthesizing base neutral voice...")
+    base_tts = MeloTTS(language="EN", device=device)
+    speaker_ids = base_tts.hps.data.spk2id
+    speaker_key = list(speaker_ids.keys())[0]  # Use default speaker
+    speaker_id = speaker_ids[speaker_key]
 
-    # === 3. Voice Cloning using ToneColorConverter ===
-    print("==> Performing voice cloning")
-    tone_color_converter = ToneColorConverter(f'{ckpt_converter}/config.json', device=device)
-    tone_color_converter.load_ckpt(f'{ckpt_converter}/checkpoint.pth')
+    # Create a temporary file for neutral audio
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_wav:
+        tmp_path = tmp_wav.name
 
+    base_tts.tts_to_file(text, speaker_id, tmp_path, speed=1.0)
+
+    # Run voice cloning
+    print("[INFO] Applying tone color conversion...")
     tone_color_converter.convert(
-        audio_src_path=tts_path,
-        src_se_path=f'{ckpt_converter}/example_se.pth',  # base voice
-        tgt_se_path=se_path,                             # user's voice
-        output_path=output_path
+        audio_src_path=tmp_path,
+        src_se=None,
+        tgt_se=target_se,
+        output_path=output_path,
+        message="@MyShell"
     )
 
-    print(f"✅ Voice cloning complete: {output_path}")
+    print(f"[SUCCESS] Cloned voice saved at: {output_path}")
+
+    # Clean up
+    if os.path.exists(tmp_path):
+        os.remove(tmp_path)

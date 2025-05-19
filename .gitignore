@@ -18,6 +18,10 @@ backend/static/speech_output.mp3
 backend/venv
 backend/__pycache__/*
 
+# Data
+backend/audio
+backend/processed
+
 # Flutter/Dart/Pub related
 .dart_tool/
 .flutter-plugins
