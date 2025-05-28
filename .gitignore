@@ -15,7 +15,7 @@ __pycache__/
 backend/.env
 backend/history.jsonl
 backend/static/speech_output.mp3
-backend/venv
+backend/voicemask-env
 backend/__pycache__/*
 
 # Data
