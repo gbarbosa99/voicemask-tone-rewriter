@@ -30,16 +30,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  just_audio: ^0.9.34
   http: ^0.13.6
-  record: ^5.0.0
-  path_provider: ^2.1.1
+  file_picker: ^6.1.1
+  just_audio: ^0.9.34
+  record: ^4.4.4
+  path_provider: ^2.1.2
+  shared_preferences: ^2.2.2
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.5.4
+  google_sign_in: ^6.2.1
+  cloud_firestore: ^5.6.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  http: ^0.13.6
-  file_picker: ^6.1.1
   audioplayers: ^5.2.1
   flutter_sound: ^9.2.13+1  # optional if you want recording
   # The "flutter_lints" package below contains a set of recommended lints to

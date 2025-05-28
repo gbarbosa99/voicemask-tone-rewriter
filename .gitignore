@@ -21,6 +21,7 @@ backend/__pycache__/*
 # Data
 backend/audio
 backend/processed
+backend/audio_cache
 
 # Flutter/Dart/Pub related
 .dart_tool/

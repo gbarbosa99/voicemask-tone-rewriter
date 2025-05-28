@@ -15,3 +15,8 @@ def log_interaction(tone, input_text, output_text, path="history.jsonl"):
     }
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")
+
+def ensure_dir(path: str):
+    import os
+    if not os.path.exists(path):
+        os.makedirs(path)

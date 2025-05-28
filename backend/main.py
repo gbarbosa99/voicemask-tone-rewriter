@@ -15,7 +15,7 @@ from voice_cloning import synthesize_cloned_speech
 from voice_setup import router as voice_setup_router
 
 app = FastAPI()
-app.include_router(voice_setup_router, prefix="/setup")
+app.include_router(voice_setup_router, prefix="/setup") 
 
 # Allow frontend access (you can restrict origins in prod)
 app.add_middleware(
@@ -96,10 +96,3 @@ def get_audio_file(file_path: str):
     }.get(ext, "application/octet-stream")
 
     return FileResponse(full_path, media_type=media_type)
-
-@app.get("/profile/{user_id}")
-def check_profile(user_id: str):
-    preview_path = os.path.join("audio", f"preview_{user_id}.wav")
-    if os.path.exists(preview_path):
-        return {"has_profile": True}
-    raise HTTPException(status_code=404, detail="Profile not found")
