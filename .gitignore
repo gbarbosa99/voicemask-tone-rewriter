@@ -4,7 +4,7 @@ __pycache__/
 *.so
 
 # Virtual envs
-voicemask-env/
+backend/voicemask-env/
 .env/
 .venv/
 
@@ -50,3 +50,14 @@ node_modules/
 
 # Ignore large cloned repos
 OpenVoice/
+
+# Ignore Python virtual environments
+**/voicemask-env/
+**/venv/
+**/.env/
+
+# Ignore large binaries from OpenVoice or model checkpoints
+**/checkpoints/
+**/*.pth
+**/*.so
+**/*.whl.env
