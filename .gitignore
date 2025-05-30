@@ -61,3 +61,4 @@ OpenVoice/
 **/*.pth
 **/*.so
 **/*.whl.env
+.env
