@@ -14,9 +14,8 @@ from voice_cloning import synthesize_cloned_speech
 
 router = APIRouter()
 
-# Directories
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CHECKPOINTS_DIR = "/home/gbarbosa9/OpenVoice/checkpoints"
+CHECKPOINTS_DIR = os.path.join(BASE_DIR, "OpenVoice", "checkpoints")
 SE_DIR = os.path.join(BASE_DIR, "se_cache")
 USER_AUDIO_DIR = os.path.join(BASE_DIR, "audio_cache", "users")
 PREVIEWS_DIR = os.path.join(BASE_DIR, "audio_cache", "previews")

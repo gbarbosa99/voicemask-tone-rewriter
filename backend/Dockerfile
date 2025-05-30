@@ -2,25 +2,23 @@ FROM python:3.10-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    ffmpeg \
-    libsndfile1 \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+    git ffmpeg libsndfile1 curl && \
+    apt-get clean
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install dependencies
-COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Manually install Melo (TTS from GitHub)
-RUN pip install git+https://github.com/myshell-ai/MeloTTS.git
-
-# Copy the rest of the app
+# Copy all backend files
 COPY . .
 
-# Run the FastAPI app
+# Install Python packages
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install git+https://github.com/myshell-ai/MeloTTS.git && \
+    python -m unidic download
+
+# Set PYTHONPATH so Melo can be found
+ENV PYTHONPATH="/app/OpenVoice"
+
+# Run the FastAPI server
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,12 +1,19 @@
 # voice_cloning.py
 import os
 import torch
-from melo.api import TTS as MeloTTS
 from openvoice.api import ToneColorConverter
 from openvoice import se_extractor
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "OpenVoice")))
+
+
+from melo.api import TTS as MeloTTS
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CHECKPOINTS_DIR = "/home/gbarbosa9/OpenVoice/checkpoints"
+CHECKPOINTS_DIR = os.path.join(BASE_DIR, "OpenVoice", "checkpoints")
 SE_DIR = os.path.join(BASE_DIR, "se_cache")
 
 # Load model
@@ -14,7 +21,10 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 tone_color_converter = ToneColorConverter(
     os.path.join(CHECKPOINTS_DIR, "converter", "config.json"), device=device
 )
-tone_color_converter.load_ckpt(os.path.join(CHECKPOINTS_DIR, "converter", "checkpoint.pth"))
+tone_color_converter.load_ckpt(
+    os.path.join(CHECKPOINTS_DIR, "converter", "checkpoint.pth")
+)
+
 
 melo_tts = MeloTTS(language="EN", device=device)
 
