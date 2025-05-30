@@ -1,68 +1,53 @@
-# Flutter build files
-frontend/build/
-frontend/.dart_tool/
-frontend/.idea/
-frontend/.vscode/
-frontend/*
-
-# Python
-backend/venv/
+# === Python & FastAPI ===
 __pycache__/
 *.py[cod]
-*.swp
-
-# Environment & logs
-backend/.env
-backend/history.jsonl
-backend/static/speech_output.mp3
-backend/voicemask-env
-backend/__pycache__/*
-
-# Data
-backend/audio
-backend/processed
-backend/audio_cache
-
-# Flutter/Dart/Pub related
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-build/
-
-# Visual Studio Code
-.vscode/
-
-# IntelliJ
-.idea/
-
-# Android
-android/.gradle/
-android/local.properties
-
-# iOS
-ios/Pods/
-ios/.symlinks/
-ios/Flutter/Generated.xcconfig
-ios/Flutter/flutter_export_environment.sh
-ios/Flutter/ephemeral/
-
-# macOS
-macos/Flutter/ephemeral/
-
-# Windows
-windows/Flutter/ephemeral/
-
-# Web
-web/Flutter/ephemeral/
-
-# Others
-*.iml
-*.lock
+*.pyo
+*.pyd
 *.log
-*.tmp
+*.sqlite3
+*.env
+*.DS_Store
+
+# === Virtual Environment ===
+venv/
+.env/
+*.egg-info/
+pip-wheel-metadata/
+
+# === OpenVoice: exclude cloned repo and models ===
+backend/OpenVoice/
+!backend/OpenVoice/openvoice/       # If you're only using OpenVoice's Python package, keep this line
+backend/OpenVoice/checkpoints/
+backend/OpenVoice/se_cache/
+backend/OpenVoice/audio/
+backend/OpenVoice/audio_cache/
+backend/OpenVoice/converter/
+
+# === Audio / Generated Files ===
+*.wav
+*.mp3
+*.m4a
+*.ogg
+*.flac
+
+# === Model Artifacts ===
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.tflite
+*.pb
+
+# === Docker Artifacts ===
+*.dockerfile
+*.tar
+__docker_cache__/
+
+# === Logs ===
+*.log
+nohup.out
+
+# === Misc ===
+.idea/
+.vscode/
 *.swp
-.DS_Store
-rewrite.txt
