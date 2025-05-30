@@ -1,53 +1,52 @@
-# === Python & FastAPI ===
+# Byte-compiled / cache
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
+*.so
+
+# Virtual envs
+voicemask-env/
+.env/
+.venv/
+
+# Python artifacts
 *.log
 *.sqlite3
-*.env
-*.DS_Store
-
-# === Virtual Environment ===
-venv/
-.env/
-*.egg-info/
-pip-wheel-metadata/
-
-# === OpenVoice: exclude cloned repo and models ===
-backend/OpenVoice/
-!backend/OpenVoice/openvoice/       # If you're only using OpenVoice's Python package, keep this line
-backend/OpenVoice/checkpoints/
-backend/OpenVoice/se_cache/
-backend/OpenVoice/audio/
-backend/OpenVoice/audio_cache/
-backend/OpenVoice/converter/
-
-# === Audio / Generated Files ===
-*.wav
-*.mp3
-*.m4a
-*.ogg
-*.flac
-
-# === Model Artifacts ===
+*.db
+*.h5
+*.tflite
+*.onnx
 *.pth
 *.pt
 *.ckpt
-*.onnx
-*.tflite
-*.pb
 
-# === Docker Artifacts ===
-*.dockerfile
-*.tar
-__docker_cache__/
+# Audio, checkpoints, and model outputs
+audio/
+audio_cache/
+se_cache/
+OpenVoice/checkpoints/
+checkpoints/
+*.wav
+*.mp3
 
-# === Logs ===
+# Flutter/Dart
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.dart_tool/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Docker
 *.log
-nohup.out
+*.pid
+*.sock
 
-# === Misc ===
-.idea/
-.vscode/
-*.swp
+# Node (if using for frontend)
+node_modules/
+
+# Ignore large cloned repos
+OpenVoice/
