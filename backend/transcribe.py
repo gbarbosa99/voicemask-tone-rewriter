@@ -2,8 +2,9 @@
 import whisper
 import os
 
-# Load model once
-model = whisper.load_model("base")  # or "medium", "large", etc.
+# Lazy-loaded model (initialized as None)
+model = None
+WHISPER_MODEL_SIZE = "tiny"  # or "base" — smaller models for t2.micro
 
 def transcribe_audio(audio_path: str) -> str:
     """
@@ -15,6 +16,13 @@ def transcribe_audio(audio_path: str) -> str:
     Returns:
         str: The transcribed text.
     """
+    global model
+
+    if model is None:
+        print(f"[INFO] Loading Whisper model ({WHISPER_MODEL_SIZE}) ...")
+        model = whisper.load_model(WHISPER_MODEL_SIZE)
+        print(f"[INFO] Model loaded.")
+
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
