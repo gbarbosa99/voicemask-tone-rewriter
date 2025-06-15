@@ -30,4 +30,4 @@ RUN mkdir -p backend/Openvoice/checkpoints/base_speakers/EN \
  && curl -L -o backend/Openvoice/checkpoints/converter/config.json https://github.com/gbarbosa99/voicemask-tone-rewriter/releases/download/v1.0.0/converter_config.json
 
 # Run the FastAPI server
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
