@@ -23,10 +23,11 @@ backend/voicemask-env/
 audio/
 audio_cache/
 se_cache/
-OpenVoice/checkpoints/
 checkpoints/
+processed/
 *.wav
 *.mp3
+history.jsonl
 
 # Flutter/Dart
 build/
@@ -47,9 +48,6 @@ Thumbs.db
 
 # Node (if using for frontend)
 node_modules/
-
-# Ignore large cloned repos
-OpenVoice/
 
 # Ignore Python virtual environments
 **/voicemask-env/

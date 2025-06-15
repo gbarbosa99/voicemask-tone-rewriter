@@ -1,9 +1,9 @@
-import openai
+import openai # type: ignore
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
-openai.api_key = os.getenv("openai_key")
+openai.api_key = os.getenv("openai_key") # Need to add an OpenAI key to a .env file in order for rewrite.py to rewrite your speech
 
 def rewrite_text(text: str, tone: str = "confident") -> str:
     prompt = (

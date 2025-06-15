@@ -1,12 +1,14 @@
 # voice_setup.py (updated to respect consent)
 import os
 import shutil
-import torch
+import torch # type: ignore
+
 from typing import Optional
 from datetime import datetime
 from pydub import AudioSegment
 from fastapi import APIRouter, UploadFile, File, Form, Query, HTTPException
 from fastapi.responses import FileResponse
+
 from openvoice import se_extractor
 from openvoice.api import ToneColorConverter
 from utils import convert_to_wav, ensure_dir
@@ -15,7 +17,7 @@ from voice_cloning import synthesize_cloned_speech
 router = APIRouter()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CHECKPOINTS_DIR = os.path.join(BASE_DIR, "OpenVoice", "checkpoints")
+CHECKPOINTS_DIR = os.path.join(BASE_DIR, "checkpoints")
 SE_DIR = os.path.join(BASE_DIR, "se_cache")
 USER_AUDIO_DIR = os.path.join(BASE_DIR, "audio_cache", "users")
 PREVIEWS_DIR = os.path.join(BASE_DIR, "audio_cache", "previews")

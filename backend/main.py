@@ -6,7 +6,7 @@ from enum import Enum
 import os
 import re
 import uuid
-from unidecode import unidecode
+from unidecode import unidecode  # type: ignore
 
 from transcribe import transcribe_audio
 from rewrite import rewrite_text

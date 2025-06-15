@@ -1,19 +1,17 @@
 # voice_cloning.py
 import os
-import torch
-from openvoice.api import ToneColorConverter
-from openvoice import se_extractor
+import torch # type: ignore
+from openvoice.api import ToneColorConverter 
+from openvoice import se_extractor 
 
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "OpenVoice")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "openVoice")))
 
-
-from melo.api import TTS as MeloTTS
-
+from melo.api import TTS as MeloTTS # type: ignore
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CHECKPOINTS_DIR = os.path.join(BASE_DIR, "OpenVoice", "checkpoints")
+CHECKPOINTS_DIR = os.path.join(BASE_DIR, "checkpoints")
 SE_DIR = os.path.join(BASE_DIR, "se_cache")
 
 # Load model
